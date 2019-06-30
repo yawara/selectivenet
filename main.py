@@ -99,7 +99,7 @@ def train(args, model, device, train_loader, writer, optimizer, epoch):
     for batch_idx, (data, target) in enumerate(train_loader):
         data, target = data.to(device), target.to(device)
         optimizer.zero_grad()
-        f, g, h = model(data)
+        f, g, h, _ = model(data)
 
         empirical_coverage = g.mean()
         r = (F.nll_loss(F.log_softmax(f), target, reduction='none') * g).mean() / empirical_coverage
@@ -145,7 +145,7 @@ def test(args, model, device, test_loader, writer, epoch):
     with torch.no_grad():
         for data, target in test_loader:
             data, target = data.to(device), target.to(device)
-            _, _, output = model(data)
+            _, _, output, _ = model(data)
             test_loss += F.nll_loss(F.log_softmax(output), target, reduction='sum').item()  # sum up batch loss
             pred = output.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
             correct += pred.eq(target.view_as(pred)).sum().item()
@@ -198,6 +198,10 @@ def main():
         train(args, model, device, train_loader, writer, optimizer, epoch)
         test(args, model, device, test_loader, writer, epoch)
         lr_scheduler.step()
+
+    for data, target in test_loader:
+        _, g, _, feature = model(data)
+        writer.add_embedding(feature, label_img=data)
 
 
 if __name__ == "__main__":

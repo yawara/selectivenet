@@ -17,4 +17,4 @@ class SelectiveNet(nn.Module):
 
     def forward(self, x):
         x = self.feature(x)
-        return (self.f(x), self.g(x), self.h(x))
+        return (self.f(x), self.g(x), self.h(x), x)
