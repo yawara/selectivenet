@@ -23,20 +23,29 @@ class Net(nn.Module):
         self.bn1 = nn.BatchNorm2d(32)
         self.conv2 = nn.Conv2d(32, 32, kernel_size=3, stride=2, padding=1, bias=False)
         self.bn2 = nn.BatchNorm2d(32)
+        # (32, 16, 16)
 
         self.conv3 = nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1, bias=False)
         self.bn3 = nn.BatchNorm2d(64)
         self.conv4 = nn.Conv2d(64, 64, kernel_size=3, stride=2, padding=1, bias=False)
         self.bn4 = nn.BatchNorm2d(64)
+        # (64, 8, 8)
 
         self.conv5 = nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1, bias=False)
         self.bn5 = nn.BatchNorm2d(128)
         self.conv6 = nn.Conv2d(128, 128, kernel_size=3, stride=2, padding=1, bias=False)
         self.bn6 = nn.BatchNorm2d(128)
+        # (128, 4, 4)
+
+        self.conv7 = nn.Conv2d(128, 256, kernel_size=3, stride=1, padding=1, bias=False)
+        self.bn7 = nn.BatchNorm2d(256)
+        self.conv8 = nn.Conv2d(256, 256, kernel_size=3, stride=2, padding=1, bias=False)
+        self.bn8 = nn.BatchNorm2d(256)
+        # (256, 2, 2)
 
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
 
-        self.fc = nn.Linear(128, 128)
+        self.fc = nn.Linear(256, 256)
 
     def forward(self, x):
         x = self.conv1(x)
@@ -58,6 +67,13 @@ class Net(nn.Module):
         x = F.leaky_relu(x, inplace=True)
         x = self.conv6(x)
         x = self.bn6(x)
+        x = F.leaky_relu(x, inplace=True)
+
+        x = self.conv7(x)
+        x = self.bn7(x)
+        x = F.leaky_relu(x, inplace=True)
+        x = self.conv8(x)
+        x = self.bn8(x)
         x = F.leaky_relu(x, inplace=True)
 
         x = self.avgpool(x)
@@ -171,7 +187,7 @@ def main():
     test_loader = DataLoader(test_dataset, batch_size=128, shuffle=False, num_workers=4)
 
     feature = Net()
-    model = SelectiveNet(feature, feature_dim=128, num_classes=10)
+    model = SelectiveNet(feature, feature_dim=256, num_classes=10)
     model.to(device)
 
     optimizer = SGD(model.parameters(), lr=0.1, momentum=0.9, weight_decay=5e-4)
