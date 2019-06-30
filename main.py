@@ -7,7 +7,7 @@ import torch.nn.functional as F
 from torch.optim import SGD
 from torch.utils.data import DataLoader
 from torchvision.datasets import CIFAR10
-from torchvision.transforms import ToTensor
+from torchvision.transforms import ToTensor, Compose, RandomHorizontalFlip
 from tensorboardX import SummaryWriter
 
 from selectivenet.selectivenet import SelectiveNet
@@ -148,7 +148,7 @@ def test(args, model, device, test_loader, writer, epoch):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('root', type=Path)
-    parser.add_argument('--epochs', type=int, default=10)
+    parser.add_argument('--epochs', type=int, default=100)
     parser.add_argument('--coverage', type=float, default=0.85)
     parser.add_argument('--l', type=float, default=32.)
     parser.add_argument('--alpha', type=float, default=0.5)
@@ -159,8 +159,13 @@ def main():
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     writer = SummaryWriter(args.logdir)
 
-    train_dataset = CIFAR10(args.root, train=True, transform=ToTensor(), download=True)
-    test_dataset = CIFAR10(args.root, train=False, transform=ToTensor(), download=True)
+    train_transform = Compose([
+        RandomHorizontalFlip(),
+        ToTensor()
+    ])
+    test_transform = ToTensor()
+    train_dataset = CIFAR10(args.root, train=True, transform=train_transform, download=True)
+    test_dataset = CIFAR10(args.root, train=False, transform=test_transform, download=True)
     train_loader = DataLoader(train_dataset, batch_size=128, shuffle=True, num_workers=4)
     test_loader = DataLoader(test_dataset, batch_size=128, shuffle=False, num_workers=4)
 
