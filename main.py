@@ -200,8 +200,9 @@ def main():
         lr_scheduler.step()
 
     for data, target in test_loader:
+        data, target = data.to(device), target.to(device)
         _, g, _, feature = model(data)
-        writer.add_embedding(feature, label_img=data)
+        writer.add_embedding(feature, meta_data=target, label_img=data)
 
 
 if __name__ == "__main__":
