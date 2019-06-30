@@ -199,12 +199,12 @@ def main():
         test(args, model, device, test_loader, writer, epoch)
         lr_scheduler.step()
 
-    test_dataset = CIFAR10(args.root, train=False, transform=None, download=True)
-    test_loader = DataLoader(test_dataset, batch_size=128, shuffle=False, num_workers=4)
+    test_loader = DataLoader(test_dataset, batch_size=1000, shuffle=True)
     for data, target in test_loader:
         data, target = data.to(device), target.to(device)
         _, g, _, feature = model(data)
         writer.add_embedding(feature, metadata=target, label_img=data)
+        break
 
 
 if __name__ == "__main__":
