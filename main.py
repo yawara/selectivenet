@@ -2,6 +2,7 @@ import argparse
 from pathlib import Path
 
 import torch
+import torch.nn as nn
 import torch.nn.functional as F
 from torch.optim import SGD
 from torch.utils.data import DataLoader
@@ -11,6 +12,61 @@ from tensorboardX import SummaryWriter
 
 from selectivenet.selectivenet import SelectiveNet
 from selectivenet.resnet import resnet10
+
+
+class Net(nn.Module):
+
+    def __init__(self):
+        super().__init__()
+
+        self.conv1 = nn.Conv2d(3, 32, kernel_size=3, stride=1, padding=1, bias=False)
+        self.bn1 = nn.BatchNorm2d(32)
+        self.conv2 = nn.Conv2d(32, 32, kernel_size=3, stride=2, padding=1, bias=False)
+        self.bn2 = nn.BatchNorm2d(32)
+
+        self.conv3 = nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1, bias=False)
+        self.bn3 = nn.BatchNorm2d(64)
+        self.conv4 = nn.Conv2d(64, 64, kernel_size=3, stride=2, padding=1, bias=False)
+        self.bn4 = nn.BatchNorm2d(64)
+
+        self.conv5 = nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1, bias=False)
+        self.bn5 = nn.BatchNorm2d(128)
+        self.conv6 = nn.Conv2d(128, 128, kernel_size=3, stride=2, padding=1, bias=False)
+        self.bn6 = nn.BatchNorm2d(128)
+
+        self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
+
+        self.fc = nn.Linear(128, 128)
+
+    def forward(self, x):
+        x = self.conv1(x)
+        x = self.bn1(x)
+        x = F.leaky_relu(x, inplace=True)
+        x = self.conv2(x)
+        x = self.bn2(x)
+        x = F.leaky_relu(x, inplace=True)
+
+        x = self.conv3(x)
+        x = self.bn3(x)
+        x = F.leaky_relu(x, inplace=True)
+        x = self.conv4(x)
+        x = self.bn4(x)
+        x = F.leaky_relu(x, inplace=True)
+
+        x = self.conv5(x)
+        x = self.bn5(x)
+        x = F.leaky_relu(x, inplace=True)
+        x = self.conv6(x)
+        x = self.bn6(x)
+        x = F.leaky_relu(x, inplace=True)
+
+        x = self.avgpool(x)
+
+        x = x.view(x.size(0), -1)
+
+        x = self.fc(x)
+
+        return x
 
 
 def train(args, model, device, train_loader, writer, optimizer, epoch):
@@ -105,7 +161,7 @@ def main():
     train_loader = DataLoader(train_dataset, batch_size=128, shuffle=True, num_workers=4)
     test_loader = DataLoader(test_dataset, batch_size=128, shuffle=False, num_workers=4)
 
-    feature = resnet10(10)
+    feature = Net()
     model = SelectiveNet(feature, feature_dim=128, num_classes=10)
     model.to(device)
 
