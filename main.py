@@ -5,6 +5,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.optim import SGD
+from torch.optim.lr_scheduler import StepLR
 from torch.utils.data import DataLoader
 from torchvision.datasets import CIFAR10
 from torchvision.transforms import ToTensor, Compose, RandomHorizontalFlip
@@ -191,10 +192,12 @@ def main():
     model.to(device)
 
     optimizer = SGD(model.parameters(), lr=0.1, momentum=0.9, weight_decay=5e-4)
+    lr_scheduler = StepLR(optimizer, step_size=25, gamma=0.5)
 
     for epoch in range(1, args.epochs + 1):
         train(args, model, device, train_loader, writer, optimizer, epoch)
         test(args, model, device, test_loader, writer, epoch)
+        lr_scheduler.step()
 
 
 if __name__ == "__main__":
