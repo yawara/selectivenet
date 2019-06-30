@@ -149,6 +149,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('root', type=Path)
     parser.add_argument('--epochs', type=int, default=100)
+    parser.add_argument('--lr', type=float, default=0.1)
     parser.add_argument('--coverage', type=float, default=0.85)
     parser.add_argument('--l', type=float, default=32.)
     parser.add_argument('--alpha', type=float, default=0.5)
